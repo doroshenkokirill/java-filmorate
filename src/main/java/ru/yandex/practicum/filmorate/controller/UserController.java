@@ -1,57 +1,32 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.manager.UserManager;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.Instant;
 import java.util.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-
-    private final Map<Long, User> users = new HashMap<>();
-//    private final List<String> emails = new ArrayList<>();
+    private final UserManager userManager;
 
     @GetMapping
-    public Collection<User> findAll() {
-        return users.values();
+    public Collection<User> getUsers() {
+        return userManager.findAll();
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        // проверки
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @;");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
-        if (user.getBirthday().isAfter(Instant.now())) {
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        return user;
+    public User create(User user) {
+        return userManager.createUser(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
-        return create(newUser);
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    public User update(User newUser) {
+        return userManager.updateUser(newUser);
     }
 }
