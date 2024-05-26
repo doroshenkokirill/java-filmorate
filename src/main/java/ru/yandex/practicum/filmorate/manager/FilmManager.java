@@ -44,7 +44,7 @@ public class FilmManager {
         oldFilm.setDescription(newFilm.getDescription());
         oldFilm.setDuration(newFilm.getDuration());
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
-        log.info ("Фильм " + oldFilm.getFilmName() + " обновлен");
+        log.info("Фильм " + oldFilm.getFilmName() + " обновлен");
         return oldFilm;
     }
 
