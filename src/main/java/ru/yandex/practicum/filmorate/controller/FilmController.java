@@ -21,12 +21,12 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(Film film) {
+    public Film create(@RequestBody Film film) {
         return filmManager.create(film);
     }
 
     @PutMapping
-    public Film update(Film newFilm) {
+    public Film update(@RequestBody Film newFilm) {
         return filmManager.update(newFilm);
     }
 }

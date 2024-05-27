@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.manager;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -20,11 +20,8 @@ public class UserManager {
         return users.values();
     }
 
-    public User createUser(@RequestBody User user) {
-        if (!checkUser(user)) {
-            log.info("Пользователь задан неверно");
-            throw new ValidationException("Пользователь задан неверно");
-        }
+    public User createUser(User user) {
+        checkUser(user);
         if (user.getName() == null) {
             user.setName(user.getLogin());
         }
@@ -36,21 +33,24 @@ public class UserManager {
         return user;
     }
 
-    public User updateUser(@RequestBody User newUser) {
-        if (!checkUser(newUser)) {
-            log.info("Пользователь задан неверно");
-            throw new ValidationException("Пользователь задан неверно");
+    public User updateUser(User newUser) {
+        checkUser(newUser);
+        if (users.containsKey(newUser.getId())) {
+            User oldUser = users.get(newUser.getId());
+            if (newUser.getName() == null) {
+                newUser.setName(newUser.getLogin());
+            } else {
+                oldUser.setName(newUser.getName());
+            }
+                oldUser.setEmail(newUser.getEmail());
+            oldUser.setLogin(newUser.getLogin());
+            oldUser.setBirthday(newUser.getBirthday());
+            users.put(oldUser.getId(), oldUser);
+            log.info("Пользователь " + oldUser.getName() + " обновлен");
+            return oldUser;
+        } else {
+            throw new NotFoundException("Пользователь " + newUser.getName() + " не найден и не обновлен");
         }
-        if (newUser.getName() == null) {
-            newUser.setName(newUser.getLogin());
-        }
-        User oldUser = users.get(newUser.getId());
-        oldUser.setEmail(newUser.getEmail());
-        oldUser.setLogin(newUser.getLogin());
-        oldUser.setName(newUser.getName());
-        oldUser.setBirthday(newUser.getBirthday());
-        log.info("Пользователь " + oldUser.getName() + " обновлен");
-        return oldUser;
     }
 
     private long getNextId() {
@@ -62,7 +62,7 @@ public class UserManager {
         return ++currentMaxId;
     }
 
-    private boolean checkUser(User user) {
+    private void checkUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         }
@@ -72,6 +72,5 @@ public class UserManager {
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
-        return true;
     }
 }
