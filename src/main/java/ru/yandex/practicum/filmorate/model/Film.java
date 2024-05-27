@@ -2,9 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 
-import java.sql.Date;
-import java.sql.Time;
-import java.time.Duration;
 import java.time.LocalDate;
 
 /**
