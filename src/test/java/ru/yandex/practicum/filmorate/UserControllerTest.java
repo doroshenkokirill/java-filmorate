@@ -101,4 +101,14 @@ public class UserControllerTest {
         userController.create(user);
         System.out.println(userController.getUsers());
     }
+
+    @Test
+    public void createUserWithoutIdTest() {
+        User user = new User();
+        user.setEmail("123@mail.ru");
+        user.setLogin("User1234");
+        user.setBirthday(LocalDate.of(2000, 2, 2));
+        userController.create(user);
+        System.out.println(userController.getUsers());
+    }
 }

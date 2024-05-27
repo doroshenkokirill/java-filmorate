@@ -28,14 +28,16 @@ public class UserManager {
         if (user.getName() == null) {
             user.setName(user.getLogin());
         }
-        user.setId(getNextId());
+        if (user.getId() == null) {
+            user.setId(getNextId());
+        }
         users.put(user.getId(), user);
         log.info("Пользователь " + user.getName() + " добавлен");
         return user;
     }
 
     public User updateUser(@RequestBody User newUser) {
-        if (users.get(newUser.getId()) == null || !checkUser(newUser)) {
+        if (!checkUser(newUser)) {
             log.info("Пользователь задан неверно");
             throw new ValidationException("Пользователь задан неверно");
         }
