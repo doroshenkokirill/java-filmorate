@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FilmControllerTest {
-    FilmController filmController = new FilmController(new FilmManager());
+    private final FilmController filmController = new FilmController(new FilmManager());
 
     @Test
     public void createFilmWithoutErrorsTest() {

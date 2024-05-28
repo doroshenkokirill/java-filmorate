@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserControllerTest {
-    UserController userController = new UserController(new UserManager());
+    private final UserController userController = new UserController(new UserManager());
 
     @Test
     public void createUserWithoutErrorsTest() {
