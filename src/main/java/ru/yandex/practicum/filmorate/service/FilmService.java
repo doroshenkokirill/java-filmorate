@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
+import java.util.Comparator;
 
 @Service
 public class FilmService {
@@ -15,6 +17,7 @@ public class FilmService {
     @Autowired
     public FilmService(FilmStorage filmStorage, UserService userService) {
     }
+
     public Collection<Film> findAll() {
         return filmStorage.findAll();
     }
@@ -33,6 +36,23 @@ public class FilmService {
 
     public Film addLike(long userId, long filmId) {
         Film film = find(filmId);
-        if (film.get)
+        film.getLikes().add(userId);
+        update(film);
+        return film;
+    }
+
+    public Film removeLike(long userId, long filmId) {
+        Film film = find(filmId);
+        if (!film.getLikes().contains(userId)) {
+            throw new NotFoundException("User с userId:" + userId + "не лайкал фильм с filmId:" + filmId);
+        }
+        film.getLikes().remove(userId);
+        update(film);
+        return film;
+    }
+
+    public Collection<Film> findTopRatedFilms(long size) {
+        Comparator<Film> comparator = Comparator.comparing(film -> film.getLikes().size());
+        return findAll().stream().sorted(comparator.reversed()).limit(size).toList();
     }
 }
