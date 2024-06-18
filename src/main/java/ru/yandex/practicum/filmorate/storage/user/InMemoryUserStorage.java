@@ -18,7 +18,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        log.info("Возвращаем всех пользователей");
+        log.info("Вывод всех пользователей");
         return users.values();
     }
 
@@ -43,7 +43,7 @@ public class InMemoryUserStorage implements UserStorage {
             user.setId(getNextId());
         }
         users.put(user.getId(), user);
-        log.info("Пользователь " + user.getName() + " добавлен");
+        log.info("Пользователь {} добавлен", user.getName());
         return user;
     }
 
@@ -61,7 +61,7 @@ public class InMemoryUserStorage implements UserStorage {
             oldUser.setLogin(newUser.getLogin());
             oldUser.setBirthday(newUser.getBirthday());
             users.put(oldUser.getId(), oldUser);
-            log.info("Пользователь " + oldUser.getName() + " обновлен");
+            log.info("Пользователь {} обновлен", oldUser.getName());
             return oldUser;
         } else {
             throw new NotFoundException("Пользователь " + newUser.getName() + " не найден и не обновлен");
@@ -88,5 +88,4 @@ public class InMemoryUserStorage implements UserStorage {
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
     }
-
 }

@@ -14,8 +14,8 @@ import java.util.Map;
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Long, Film> films = new HashMap<>();
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    private final Map<Long, Film> films = new HashMap<>();
 
     @Override
     public Collection<Film> findAll() {
@@ -41,7 +41,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             film.setId(getNextId());
         }
         films.put(film.getId(), film);
-        log.info("Фильм " + film.getName() + " добавлен");
+        log.info("Фильм {} добавлен", film.getName());
         return film;
     }
 
@@ -54,7 +54,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             oldFilm.setDescription(newFilm.getDescription());
             oldFilm.setDuration(newFilm.getDuration());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            log.info("Фильм " + oldFilm.getName() + " обновлен");
+            log.info("Фильм {} обновлен", oldFilm.getName());
             return oldFilm;
         } else {
             throw new NotFoundException("Фильм " + newFilm.getName() + " не найден и не обновлен");
