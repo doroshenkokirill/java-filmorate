@@ -3,11 +3,13 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -35,32 +37,35 @@ public class UserService {
         return userStorage.update(newUser);
     }
 
-    public User addToFriendsList(long userId, long newFriendId) {
+    public void addToFriendsList(long userId, long newFriendId) {
         User user = find(userId);
-        User friendOfUser = find(newFriendId);
-        user.getFriends().add(newFriendId);
-        friendOfUser.getFriends().add(userId);
+        User newFriend = find(newFriendId);
+        Set<Long> userFriendList = user.getFriends();
+        Set<Long> newFriendFriendList = newFriend.getFriends();
+        userFriendList.add(newFriendId);
+        newFriendFriendList.add(userId);
         update(user);
-        update(friendOfUser);
-        log.info("Пользователь {} добавил в друзья {}", userId, newFriendId);
-        return user;
+        update(newFriend);
+        log.info("Пользователи {} и {} теперь друзья", user.getName(), newFriend.getName());
     }
 
-    public User removeFromFriendsList(long userId, long friendId) {
+    public void removeFromFriendsList(long userId, long friendId) {
         User user = find(userId);
         User friend = find(friendId);
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
         update(user);
         update(friend);
-        log.info("Пользователь {} удалил из друзей {}", userId, friendId);
-        return user;
+        log.info("Пользователь {} удалил из друзей {}", user.getName(), friend.getName());
     }
 
     public Collection<User> findFriendsById(long id) {
-        Collection<User> users = findAll();
+        if (find(id) == null) {
+            throw new NotFoundException("Такого id нет");
+        }
         log.info("Список друзей для пользователя {}", id);
-        return users.stream().filter(someUsers -> someUsers.getFriends().contains(id)).toList();
+        return findAll().stream()
+                .filter(user -> user.getFriends().contains(id)).toList();
     }
 
     public Collection<User> findMutualFriends(long userId, long anotherUserId) {
@@ -68,7 +73,7 @@ public class UserService {
         User user = find(userId);
         User anotherUser = find(anotherUserId);
         List<Long> friendsId = user.getFriends().stream().filter(anotherUser.getFriends()::contains).toList();
-        log.info("Список общих друзей для пользователей {} и {}", userId, anotherUserId);
-        return users.stream().filter(curUser -> friendsId.contains(curUser.getId())).toList();
+        log.info("Список общих друзей для пользователей {} и {}", user.getName(), anotherUser.getName());
+        return users.stream().filter(someUser -> friendsId.contains(someUser.getId())).toList();
     }
 }

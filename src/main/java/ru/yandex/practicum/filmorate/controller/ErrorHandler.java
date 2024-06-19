@@ -14,10 +14,10 @@ import java.util.Map;
 @RestControllerAdvice("ru.yandex.practicum.filmorate.controller")
 public class ErrorHandler {
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleNotValidException(MethodArgumentNotValidException e) {
-        log.error("Ошибка - данные введены неверно");
-        return Map.of("Ошибка", "Команда не выполнена - данные неверны");
+        log.error("Ошибка сервера");
+        return Map.of("Ошибка", "Что-то пошло не так");
     }
 
     @ExceptionHandler
@@ -28,9 +28,9 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleThrowable(Throwable e) {
-        log.error("Ошибка сервера");
-        return Map.of("Ошибка", "Что-то пошло не так");
+        log.error("Ошибка - данные введены неверно");
+        return Map.of("Ошибка", "Команда не выполнена - данные неверны");
     }
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -15,5 +16,5 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Set<Long> friends;
+    private Set<Long> friends = new HashSet<>();
 }

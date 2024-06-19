@@ -6,18 +6,22 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FilmService {
-    private FilmStorage filmStorage;
-    private UserService userService;
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Collection<Film> findAll() {
@@ -36,28 +40,34 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
-    public Film addLike(long userId, long filmId) {
+    public void addLike(long filmId, long userId) {
+        Film film = find(filmId);
+        Set<Long> likes = film.getLikes();
+        likes.add(userId);
+        update(film);
+        log.info("Пользователь {} лайкнул фильм {}", userStorage.find(userId), film.getName());
+    }
+
+    public void removeLike(long filmId, long userId) {
+        if (userStorage.find(userId) == null) {
+            throw new NotFoundException("Такого пользователя нет");
+        }
         Film film = find(filmId);
         film.getLikes().add(userId);
         update(film);
-        log.info("Пользователь {} лайкнул фильм {}", userId, filmId);
-        return film;
     }
 
-    public Film removeLike(long userId, long filmId) {
-        Film film = find(filmId);
-        if (!film.getLikes().contains(userId)) {
-            log.error("Пользователь {} не этот фильм {}", userId, filmId);
-            throw new NotFoundException("User с userId:" + userId + "не лайкал фильм с filmId:" + filmId);
-        }
-        film.getLikes().remove(userId);
-        update(film);
-        return film;
-    }
-
-    public Collection<Film> findTopRatedFilms(long size) {
-        Comparator<Film> comparator = Comparator.comparing(film -> film.getLikes().size());
-        log.info("Возвращаем список из топ-{}", size);
-        return findAll().stream().sorted(comparator.reversed()).limit(size).toList();
+    public Collection<Film> findTopRatedFilms(int size) {
+        log.info("Список из топ-{}", size);
+        return filmStorage.findAll().stream()
+                .filter(film -> film.getLikes() != null)
+                .filter(film -> film.getId() != null)
+                .sorted((f1, f2) -> {
+                    int likes1 = f1.getLikes().size();
+                    int likes2 = f2.getLikes().size();
+                    return likes2 - likes1;
+                })
+                .limit(size)
+                .collect(Collectors.toList());
     }
 }

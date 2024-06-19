@@ -25,7 +25,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User find(long id) {
         if (!users.containsKey(id)) {
-            String message = "Пользователь c id" + id + " не найден";
+            String message = "Пользователь c id " + id + " не найден";
             log.info("{}: {}", "input Error", message);
             throw new NotFoundException(message);
         }
