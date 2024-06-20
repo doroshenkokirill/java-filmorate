@@ -1,6 +1,9 @@
 # java-filmorate
+
 ## Диаграмма БД
+
 ![](Diagram.png)
+
 ### Описание диаграммы для java-filmorate
 
 - Таблицы **film** / **user** исходные.
