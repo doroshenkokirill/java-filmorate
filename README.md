@@ -1,6 +1,6 @@
 # java-filmorate
 ## Диаграмма БД
-![](/Users/miroslavdenisov/Documents/Новая папка/java-filmorate/Diagram.png)
+![](Diagram.png)
 ### Описание диаграммы для java-filmorate
 
 - Таблицы **film** / **user** исходные.
