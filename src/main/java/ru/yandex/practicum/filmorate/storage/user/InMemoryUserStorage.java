@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.manager;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,14 +13,28 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class UserManager {
+public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
 
+    @Override
     public Collection<User> findAll() {
+        log.info("Вывод всех пользователей");
         return users.values();
     }
 
-    public User createUser(User user) {
+    @Override
+    public User find(long id) {
+        if (!users.containsKey(id)) {
+            String message = "Пользователь c id " + id + " не найден";
+            log.info("{}: {}", "input Error", message);
+            throw new NotFoundException(message);
+        }
+        log.info("Пользователь с id {} найден", id);
+        return users.get(id);
+    }
+
+    @Override
+    public User create(User user) {
         checkUser(user);
         if (user.getName() == null) {
             user.setName(user.getLogin());
@@ -29,11 +43,12 @@ public class UserManager {
             user.setId(getNextId());
         }
         users.put(user.getId(), user);
-        log.info("Пользователь " + user.getName() + " добавлен");
+        log.info("Пользователь {} добавлен", user.getName());
         return user;
     }
 
-    public User updateUser(User newUser) {
+    @Override
+    public User update(User newUser) {
         checkUser(newUser);
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
@@ -42,11 +57,11 @@ public class UserManager {
             } else {
                 oldUser.setName(newUser.getName());
             }
-                oldUser.setEmail(newUser.getEmail());
+            oldUser.setEmail(newUser.getEmail());
             oldUser.setLogin(newUser.getLogin());
             oldUser.setBirthday(newUser.getBirthday());
             users.put(oldUser.getId(), oldUser);
-            log.info("Пользователь " + oldUser.getName() + " обновлен");
+            log.info("Пользователь {} обновлен", oldUser.getName());
             return oldUser;
         } else {
             throw new NotFoundException("Пользователь " + newUser.getName() + " не найден и не обновлен");

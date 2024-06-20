@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.manager;
+package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,25 +13,39 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class FilmManager {
-
-    private final Map<Long, Film> films = new HashMap<>();
+public class InMemoryFilmStorage implements FilmStorage {
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    private final Map<Long, Film> films = new HashMap<>();
 
+    @Override
     public Collection<Film> findAll() {
+        log.info("Возвращаем все фильмы");
         return films.values();
     }
 
+    @Override
+    public Film find(long id) {
+        if (!films.containsKey(id)) {
+            String message = "Фильм c id" + id + " не найден";
+            log.info("{}: {}", "input Error", message);
+            throw new NotFoundException(message);
+        }
+        log.info("Фильм с id {} найден", id);
+        return films.get(id);
+    }
+
+    @Override
     public Film create(Film film) {
         checkFilm(film);
         if (film.getId() == null) {
             film.setId(getNextId());
         }
         films.put(film.getId(), film);
-        log.info("Фильм " + film.getName() + " добавлен");
+        log.info("Фильм {} добавлен", film.getName());
         return film;
     }
 
+    @Override
     public Film update(Film newFilm) {
         checkFilm(newFilm);
         if (films.containsKey(newFilm.getId())) {
@@ -40,7 +54,7 @@ public class FilmManager {
             oldFilm.setDescription(newFilm.getDescription());
             oldFilm.setDuration(newFilm.getDuration());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            log.info("Фильм " + oldFilm.getName() + " обновлен");
+            log.info("Фильм {} обновлен", oldFilm.getName());
             return oldFilm;
         } else {
             throw new NotFoundException("Фильм " + newFilm.getName() + " не найден и не обновлен");
