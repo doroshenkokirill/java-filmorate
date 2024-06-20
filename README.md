@@ -2,7 +2,7 @@
 
 ## Диаграмма БД
 
-![diagram.png](..%2F..%2F..%2FDownloads%2Fdiagram.png)
+![](diagram.png)
 
 ### Описание диаграммы для java-filmorate
 
