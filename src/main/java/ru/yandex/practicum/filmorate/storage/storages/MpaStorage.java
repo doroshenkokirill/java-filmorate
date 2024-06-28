@@ -20,19 +20,19 @@ public class MpaStorage {
     private final RowMapper<Mpa> mapperMpa;
 
     public List<Mpa> getAllMpa() {
-        String GET_ALL_MPA = "SELECT * FROM mpa_rate";
-        return jdbc.query(GET_ALL_MPA, mapperMpa);
+        String getAllMpa = "SELECT * FROM mpa_rate";
+        return jdbc.query(getAllMpa, mapperMpa);
     }
 
     public Mpa getMpa(int id) {
         check(id);
-        String GET_MPA = "SELECT * FROM mpa_rate WHERE id = ?";
-        return jdbc.queryForObject(GET_MPA, mapperMpa, id);
+        String getMpa = "SELECT * FROM mpa_rate WHERE id = ?";
+        return jdbc.queryForObject(getMpa, mapperMpa, id);
     }
 
     public void check(int id) throws NotFoundException {
-        String CHECK = "SELECT COUNT(id) FROM mpa_rate WHERE id = ?";
-        Optional<Integer> countMpa = Optional.ofNullable(jdbc.queryForObject(CHECK, Integer.class, id));
+        String check = "SELECT COUNT(id) FROM mpa_rate WHERE id = ?";
+        Optional<Integer> countMpa = Optional.ofNullable(jdbc.queryForObject(check, Integer.class, id));
         if (countMpa.isEmpty()) {
             throw new InternalServerException("Ошибка проверки наличия рейтинга");
         } else if (countMpa.get() == 0) {

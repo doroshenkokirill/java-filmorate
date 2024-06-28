@@ -21,19 +21,19 @@ public class FilmStorage {
     private final RowMapper<Film> mapper;
 
     public List<Film> findAll() {
-        String FIND_ALL = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.genre, m.id AS mpa_id, " +
+        String findAll = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.genre, m.id AS mpa_id, " +
                 "m.name AS mpa_name " +
                 "FROM films AS f " +
                 "INNER JOIN mpa_rate as m ON f.mpa_id = m.id";
-        return jdbc.query(FIND_ALL, mapper);
+        return jdbc.query(findAll, mapper);
     }
 
     public Film create(Film film) {
-        String CREATE = "INSERT INTO films(name, description, releaseDate, duration, genre, mpa_id)" +
+        String create = "INSERT INTO films(name, description, releaseDate, duration, genre, mpa_id)" +
                 "VALUES (?, ?, ?, ?, ?, ?)";
         int id = BaseDbStorage.insert(
                 jdbc,
-                CREATE,
+                create,
                 film.getName(),
                 film.getDescription(),
                 Date.valueOf(film.getReleaseDate()),
@@ -46,11 +46,11 @@ public class FilmStorage {
     }
 
     public Film update(Film newFilm) {
-        String UPDATE = "UPDATE films " +
+        String update_sql = "UPDATE films " +
                 "SET name = ?, description = ?, releaseDate = ?, duration = ?, genre = ?, mpa_id = ? " +
                 "WHERE id = ?";
         int rowsUpdated = jdbc.update(
-                UPDATE,
+                update_sql,
                 newFilm.getName(),
                 newFilm.getDescription(),
                 Date.valueOf(newFilm.getReleaseDate()),
@@ -63,11 +63,11 @@ public class FilmStorage {
     }
 
     public Film getFilmById(int filmId) {
-        String GET_FILM_BY_ID = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.genre, m.id AS mpa_id, " +
+        String getFilmById = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.genre, m.id AS mpa_id, " +
                 "m.name AS mpa_name " +
                 "FROM films AS f " +
                 "INNER JOIN mpa_rate as m ON f.mpa_id = m.id WHERE f.id = ?";
-        return jdbc.queryForObject(GET_FILM_BY_ID, mapper, filmId);
+        return jdbc.queryForObject(getFilmById, mapper, filmId);
     }
 
     private String convertGenresToString(List<Genre> genres) {

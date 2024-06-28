@@ -21,19 +21,19 @@ public class GenreStorage {
     private final RowMapper<Genre> mapper;
 
     public List<Genre> getAllGenres() {
-        String GET_ALL_GENRES = "SELECT * FROM genre";
-        return jdbc.query(GET_ALL_GENRES, mapper);
+        String getAllGenres = "SELECT * FROM genre";
+        return jdbc.query(getAllGenres, mapper);
     }
 
     public Genre getGenre(int id) {
         checkGenre(id);
-        String GET_GENRE = "SELECT * FROM genre WHERE id = ?";
-        return jdbc.queryForObject(GET_GENRE, mapper, id);
+        String getGenre = "SELECT * FROM genre WHERE id = ?";
+        return jdbc.queryForObject(getGenre, mapper, id);
     }
 
     public void checkGenre(int id) throws NotFoundException {
-        String CHECK_GENRE = "SELECT COUNT(id) FROM genre WHERE id = ?";
-        Optional<Integer> countGenre = Optional.ofNullable(jdbc.queryForObject(CHECK_GENRE, Integer.class, id));
+        String checkGenre = "SELECT COUNT(id) FROM genre WHERE id = ?";
+        Optional<Integer> countGenre = Optional.ofNullable(jdbc.queryForObject(checkGenre, Integer.class, id));
         if (countGenre.isEmpty()) {
             throw new InternalServerException("Ошибка добавления в друзья");
         } else if (countGenre.get() == 0) {

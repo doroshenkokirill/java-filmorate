@@ -20,8 +20,8 @@ public class UserStorage {
     private final RowMapper<User> mapper;
 
     public List<User> findAll() {
-        String FIND_ALL = "SELECT * FROM users";
-        return jdbc.query(FIND_ALL, mapper);
+        String findAll = "SELECT * FROM users";
+        return jdbc.query(findAll, mapper);
     }
 
     public User create(User user) {
@@ -39,11 +39,11 @@ public class UserStorage {
     }
 
     public User update(User newUser) {
-        String UPDATE = "UPDATE users " +
+        String update = "UPDATE users " +
                 "SET email = ?, login = ?, name = ?, birthday = ? " +
                 "WHERE id = ?";
         int rows = jdbc.update(
-                UPDATE,
+                update,
                 newUser.getEmail(),
                 newUser.getLogin(),
                 newUser.getName(),
@@ -57,7 +57,7 @@ public class UserStorage {
     }
 
     public User getUser(int id) {
-        String GET_USER = "SELECT * FROM users WHERE id = ?";
-        return jdbc.queryForObject(GET_USER, mapper, id);
+        String getUser = "SELECT * FROM users WHERE id = ?";
+        return jdbc.queryForObject(getUser, mapper, id);
     }
 }
