@@ -59,12 +59,12 @@ public class FriendsStorage {
         return userRepository.getUser(id);
     }
 
-    public User deleteFriend(int user_id, int friendId) {
-        checkUsers(user_id);
+    public User deleteFriend(int userId, int friendId) {
+        checkUsers(userId);
         checkUsers(friendId);
         String deleteFriend = "DELETE FROM friends_list WHERE user_id = ? AND friend_id = ?";
-        jdbc.update(deleteFriend, user_id, friendId);
-        return userRepository.getUser(user_id);
+        jdbc.update(deleteFriend, userId, friendId);
+        return userRepository.getUser(userId);
     }
 
     private void checkUsers(int id) {
