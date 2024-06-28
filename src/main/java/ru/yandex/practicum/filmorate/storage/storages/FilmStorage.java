@@ -46,11 +46,11 @@ public class FilmStorage {
     }
 
     public Film update(Film newFilm) {
-        String update_sql = "UPDATE films " +
+        String updateSql = "UPDATE films " +
                 "SET name = ?, description = ?, releaseDate = ?, duration = ?, genre = ?, mpa_id = ? " +
                 "WHERE id = ?";
         int rowsUpdated = jdbc.update(
-                update_sql,
+                updateSql,
                 newFilm.getName(),
                 newFilm.getDescription(),
                 Date.valueOf(newFilm.getReleaseDate()),
