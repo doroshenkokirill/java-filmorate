@@ -1,79 +1,98 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.storages.FriendsStorage;
+import ru.yandex.practicum.filmorate.storage.storages.UserStorage;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-@Slf4j
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserStorage userRepository;
+    private final FriendsStorage friendsRepository;
 
-    @Autowired
-    public UserService(UserStorage storage) {
-        this.userStorage = storage;
-    }
-
-    public Collection<User> findAll() {
-        return userStorage.findAll();
-    }
-
-    public User find(long id) {
-        return userStorage.find(id);
-    }
-
-    public User create(User user) {
-        return userStorage.create(user);
-    }
-
-    public User update(User newUser) {
-        return userStorage.update(newUser);
-    }
-
-    public void addToFriendsList(long userId, long newFriendId) {
-        User user = find(userId);
-        User newFriend = find(newFriendId);
-        Set<Long> userFriendList = user.getFriends();
-        Set<Long> newFriendFriendList = newFriend.getFriends();
-        userFriendList.add(newFriendId);
-        newFriendFriendList.add(userId);
-        update(user);
-        update(newFriend);
-        log.info("Пользователи {} и {} теперь друзья", user.getName(), newFriend.getName());
-    }
-
-    public void removeFromFriendsList(long userId, long friendId) {
-        User user = find(userId);
-        User friend = find(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-        update(user);
-        update(friend);
-        log.info("Пользователь {} удалил из друзей {}", user.getName(), friend.getName());
-    }
-
-    public Collection<User> findFriendsById(long id) {
-        if (find(id) == null) {
-            throw new NotFoundException("Такого id нет");
+    public UserDto addFriend(int id, int friendId) {
+        if (id == friendId) {
+            throw new ValidationException("Вы не можете добавить самого себя в друзья.");
         }
-        log.info("Список друзей для пользователя {}", id);
-        return findAll().stream()
-                .filter(user -> user.getFriends().contains(id)).toList();
+        User user = friendsRepository.addFriend(id, friendId);
+        return UserMapper.mapToUserDto(user);
     }
 
-    public Collection<User> findMutualFriends(long userId, long anotherUserId) {
-        Collection<User> users = findAll();
-        User user = find(userId);
-        User anotherUser = find(anotherUserId);
-        List<Long> friendsId = user.getFriends().stream().filter(anotherUser.getFriends()::contains).toList();
-        log.info("Список общих друзей для пользователей {} и {}", user.getName(), anotherUser.getName());
-        return users.stream().filter(someUser -> friendsId.contains(someUser.getId())).toList();
+    public UserDto deleteFriend(int id, int friendId) {
+        if (id == friendId) {
+            throw new ValidationException("Вы не можете удалить самого себя из друзей.");
+        }
+        User user = friendsRepository.deleteFriend(id, friendId);
+        return UserMapper.mapToUserDto(user);
+    }
+
+    public List<UserDto> getMutualFriends(int id, int otherId) {
+        if (id == otherId) {
+            throw new ValidationException("Вы не можете искать общих друзей с самим собой.");
+        }
+        List<User> userFriends = friendsRepository.getAllFriendsById(id);
+        List<User> otherUserFriends = friendsRepository.getAllFriendsById(id);
+        List<User> mutualFriends;
+
+        if (userFriends != null && otherUserFriends != null) {
+            List<Integer> otherUserFriendsId = friendsRepository.getAllFriendsById(otherId)
+                    .stream()
+                    .map(User::getId)
+                    .toList();
+            mutualFriends = userFriends
+                    .stream()
+                    .filter(user -> otherUserFriendsId.contains(user.getId()))
+                    .toList();
+        } else {
+            throw new NotFoundException("У вас с данным пользователем нет общих друзей.");
+        }
+        return mutualFriends.stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
+    }
+
+    public List<UserDto> getAllFriendsById(int id) {
+        List<User> friends = friendsRepository.getAllFriendsById(id);
+        return friends.stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
+    }
+
+    public List<UserDto> findAll() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
+    }
+
+    public UserDto create(UserDto userDto) {
+        if ((userDto.getName() == null) || (userDto.getName().isBlank())) {
+            userDto.setName(userDto.getLogin());
+        }
+        User user = userRepository.create(UserMapper.mapToUser(userDto));
+        return UserMapper.mapToUserDto(user);
+    }
+
+    public UserDto update(UserDto newUserDto) {
+        if (newUserDto.getName() == null || newUserDto.getName().isBlank()) {
+            newUserDto.setName(newUserDto.getLogin());
+        }
+        User user = userRepository.update(UserMapper.mapToUser(newUserDto));
+        return UserMapper.mapToUserDto(user);
+    }
+
+    public UserDto getUser(int id) {
+        User user = userRepository.getUser(id);
+        return UserMapper.mapToUserDto(user);
     }
 }

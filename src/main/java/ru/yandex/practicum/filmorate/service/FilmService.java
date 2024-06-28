@@ -1,73 +1,94 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.storages.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.storages.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.storages.LikesStorage;
+import ru.yandex.practicum.filmorate.storage.storages.MpaStorage;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.util.List;
 
-@Slf4j
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class FilmService {
+    private static final LocalDate RELEASE_DATE = LocalDate.of(1895, 12, 28);
+
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final MpaStorage mpaStorage;
+    private final GenreStorage genreRepository;
+    private final LikesStorage likesRepository;
 
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+    public FilmDto addLike(int filmId, int userId) {
+        Film film = likesRepository.addLike(filmId, userId);
+        return FilmMapper.mapToFilmDto(film);
     }
 
-    public Collection<Film> findAll() {
-        return filmStorage.findAll();
+    public FilmDto deleteLike(int filmId, int userId) {
+        Film film = likesRepository.deleteLike(filmId, userId);
+        return FilmMapper.mapToFilmDto(film);
     }
 
-    public Film find(long id) {
-        return filmStorage.find(id);
+    public List<FilmDto> getPopularFilms(int count) {
+        List<Film> popularFilms = likesRepository.getPopularFilms(count);
+        return popularFilms.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 
-    public Film create(Film film) {
-        return filmStorage.create(film);
-    }
-
-    public Film update(Film film) {
-        return filmStorage.update(film);
-    }
-
-    public void addLike(long filmId, long userId) {
-        Film film = find(filmId);
-        Set<Long> likes = film.getLikes();
-        likes.add(userId);
-        update(film);
-        log.info("Пользователь {} лайкнул фильм {}", userStorage.find(userId), film.getName());
-    }
-
-    public void removeLike(long filmId, long userId) {
-        if (userStorage.find(userId) == null) {
-            throw new NotFoundException("Такого пользователя нет");
+    public FilmDto create(FilmDto film) {
+        check(film);
+        if (film.getReleaseDate() != null) {
+            if (film.getReleaseDate().isBefore(RELEASE_DATE)) {
+                throw new ValidationException("Ошибка в дате выхода");
+            }
         }
-        Film film = find(filmId);
-        film.getLikes().add(userId);
-        update(film);
+
+        Film cratedFilm = filmStorage.create(FilmMapper.mapToFilm(film));
+        return FilmMapper.mapToFilmDto(cratedFilm);
     }
 
-    public Collection<Film> findTopRatedFilms(int size) {
-        log.info("Список из топ-{}", size);
-        return filmStorage.findAll().stream()
-                .filter(film -> film.getLikes() != null)
-                .filter(film -> film.getId() != null)
-                .sorted((f1, f2) -> {
-                    int likes1 = f1.getLikes().size();
-                    int likes2 = f2.getLikes().size();
-                    return likes2 - likes1;
-                })
-                .limit(size)
-                .collect(Collectors.toList());
+    private void check(FilmDto film) {
+        try {
+            if (film.getMpa() != null) {
+                mpaStorage.check(film.getMpa().getId());
+            }
+            if (film.getGenres() != null) {
+                film.getGenres().forEach(genre -> genreRepository.checkGenre(genre.getId()));
+            }
+        } catch (NotFoundException e) {
+            throw new ValidationException(e.getMessage());
+        }
+    }
+
+    public FilmDto update(FilmDto newFilm) {
+        check(newFilm);
+        if (newFilm.getReleaseDate() != null) {
+            if (newFilm.getReleaseDate().isBefore(RELEASE_DATE)) {
+                throw new ValidationException("Ошибка в дате релиза");
+            }
+        }
+        Film film = filmStorage.update(FilmMapper.mapToFilm(newFilm));
+        return FilmMapper.mapToFilmDto(film);
+    }
+
+    public FilmDto getFilmById(int filmId) {
+        Film film = filmStorage.getFilmById(filmId);
+        return FilmMapper.mapToFilmDto(film);
+    }
+
+    public List<FilmDto> findAll() {
+        return filmStorage.findAll()
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 }
