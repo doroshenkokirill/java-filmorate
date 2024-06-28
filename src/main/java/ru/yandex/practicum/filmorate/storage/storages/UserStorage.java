@@ -25,10 +25,10 @@ public class UserStorage {
     }
 
     public User create(User user) {
-        String CREATE = "INSERT INTO users(email, login, name, birthday) VALUES (?, ?, ?, ?)";
+        String create = "INSERT INTO users(email, login, name, birthday) VALUES (?, ?, ?, ?)";
         int id = BaseDbStorage.insert(
                 jdbc,
-                CREATE,
+                create,
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
