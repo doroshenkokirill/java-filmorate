@@ -1,19 +1,17 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.LinkedHashSet;
 
 @Data
 @Builder
-@EqualsAndHashCode(of = {"id"})
-public class Film {
+public class FilmDto {
     private int id;
     @NotBlank
     private String name;
@@ -22,6 +20,6 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private int duration;
-    private List<Genre> genre;
-    private Mpa mpa;
+    private LinkedHashSet<GenreDto> genres;
+    private MpaDto mpa;
 }
